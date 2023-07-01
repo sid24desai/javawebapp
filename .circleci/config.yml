@@ -33,9 +33,15 @@ jobs:
         command: |
           ls -rlt ~/repo/build/libs/app.jar
           az webapp deploy --resource-group siliconrg11 --name valleywebapp32 --type java --src-path gradle/wrapper/gradle-wrapper.jar
-workflows:
-  version: 2
-  build-deploy:
-    jobs:
-    - deploy
+ workflows:
+   version: 2
+   build-deploy:
+     jobs:
+       - build
+       - deploy:
+           requires:
+             - build
+           filters:
+             branches:
+               only: main
     
