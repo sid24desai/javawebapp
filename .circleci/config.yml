@@ -1,72 +1,51 @@
-version: 2.1
-orbs:
-  gradle: circleci/gradle@3.0.0
-
+# Orb 'circleci/gradle@3.0.0' resolved to 'circleci/gradle@3.0.0'
+version: 2
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:11-jdk
+    - image: circleci/openjdk:11-jdk
     working_directory: ~/repo
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - gradle-dependencies-{{ checksum "build.gradle" }}
-            - gradle-dependencies-
-      - run: gradle dependencies
-      - save_cache:
-          paths:
-            - ~/.gradle
-          key: gradle-dependencies-{{ checksum "build.gradle" }}
-
-      - run: gradle test
-
-      - run:
-          name: "Build and Package JAR"
-          command: |
-            ./gradlew customFatJar
-            ls -rlt ~/repo/build/libs/app.jar
-
-      - persist_to_workspace:
-          root: ~/repo
-          paths:
-            - build
+    - checkout
+    - run:
+        command: gradle dependencies
+    - run:
+        command: gradle test
+    - run:
+        name: Build and Package JAR
+        command: |
+          ./gradlew customFatJar
+          ls -rlt repo/javawebapp/gradle/wrapper/gradle-wrapper.jar
+    - persist_to_workspace:
+        root: ~/repo
+        paths:
+        - build
   deploy:
     docker:
-      - image: circleci/python:3.7
+    - image: circleci/python:3.7
     steps:
-      - checkout
-      - run:
-          name: Install azure-cli
-          command: |
-            curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-      - run:
-          name: Login to Azure
-          command: |
-            az login --service-principal -u c0c952e9-5254-45b5-b838-6d26a31435cb -p xYI8Q~nZyHRqdUqGrfEGZ3ZgxRt8313-CS0ifbLE --tenant 83331f4e-7f45-4ce4-99ed-af9038592395
-
-      - attach_workspace:
-          at: ~/repo
-
-      - run:
-          name: Deploy to Azure App Service
-          command: |
-            az webapp up --sku F1 -n 'valleywebapp32' -l 'Australia East' --runtime 'JAVA:17-java17' --resource-group 'Cik' -p 'P1v2' --os-type 'Linux'
-
-      - run:
-          name: Deploy Code
-          command: |
-            ls -rlt ~/repo/build/libs/app.jar
-            az webapp deploy --resource-group siliconrg11 --name valleywebapp32 --type java --src-path gradle/wrapper/gradle-wrapper.jar
-
+    - checkout
+    - run:
+        name: Install azure-cli
+        command: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    - run:
+        name: Login to Azure
+        command: |
+          az login --service-principal -u c0c952e9-5254-45b5-b838-6d26a31435cb -p xYI8Q~nZyHRqdUqGrfEGZ3ZgxRt8313-CS0ifbLE --tenant 83331f4e-7f45-4ce4-99ed-af9038592395
+    - attach_workspace:
+        at: ~/repo
+    - run:
+        name: Deploy to Azure App Service
+        command: |
+          az webapp up --sku F1 -n 'valleywebapp32' -l 'Australia East' --runtime 'JAVA:17-java17' --resource-group 'Cik' -p 'P1v2' --os-type 'Linux'
+    - run:
+        name: Deploy Code
+        command: |
+          ls -rlt ~/repo/build/libs/app.jar
+          az webapp deploy --resource-group siliconrg11 --name valleywebapp32 --type java --src-path gradle/wrapper/gradle-wrapper.jar
 workflows:
   version: 2
   build-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: main
+    - build
