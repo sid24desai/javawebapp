@@ -9,10 +9,6 @@ jobs:
     - checkout
     - run:
         command: gradle dependencies
-    - persist_to_workspace:
-        root: ~/repo
-        paths:
-        - build
   deploy:
     docker:
     - image: circleci/python:3.7
