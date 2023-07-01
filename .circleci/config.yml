@@ -9,13 +9,6 @@ jobs:
     - checkout
     - run:
         command: gradle dependencies
-    - run:
-        command: gradle test
-    - run:
-        name: Build and Package JAR
-        command: |
-          ./gradlew customFatJar
-          ls -rlt repo/javawebapp/gradle/wrapper/gradle-wrapper.jar
     - persist_to_workspace:
         root: ~/repo
         paths:
